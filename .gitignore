@@ -1,3 +1,5 @@
+clean_mmd_records.sh
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
