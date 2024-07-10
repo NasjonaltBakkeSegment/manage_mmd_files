@@ -1,6 +1,7 @@
 mmd_files/*
 *.sh*
 missing_collection*
+products_outside_polygon*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -1,5 +1,16 @@
 import os
 from lxml import etree
+from shapely.geometry import Polygon, box
+
+polygon = Polygon([
+    (-20.263238824222373, 84.8852877777822),
+    (-36.25445787748578, 67.02581594412311),
+    (11.148084316116405, 52.31593720759386),
+    (45.98609725358305, 63.94940066151824),
+    (89.96194965005743, 84.8341192704811),
+    (-20.263238824222373, 84.8852877777822),
+    (-20.263238824222373, 84.8852877777822)
+    ])
 
 class MMD:
 
@@ -46,6 +57,21 @@ class MMD:
             return True
         else:
             return False
+
+    def check_if_within_polygon(self):
+
+        # Extract the geographic extent coordinates
+        north = float(self.root.xpath('.//mmd:north', namespaces=self.root.nsmap)[0].text)
+        south = float(self.root.xpath('.//mmd:south', namespaces=self.root.nsmap)[0].text)
+        west = float(self.root.xpath('.//mmd:west', namespaces=self.root.nsmap)[0].text)
+        east = float(self.root.xpath('.//mmd:east', namespaces=self.root.nsmap)[0].text)
+
+        # Create a shapely box (rectangle) from the geographic extent
+        extent_box = box(west, south, east, north)
+
+        # Check if the extent box overlaps with the given polygon
+        return extent_box.intersects(polygon) # Returns True or False
+
 
 def find_xml_files(directory, product_type):
     """
