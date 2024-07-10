@@ -1,5 +1,5 @@
 mmd_files/*
-clean_mmd_records.sh
+*.sh*
 missing_collection*
 
 # Byte-compiled / optimized / DLL files
