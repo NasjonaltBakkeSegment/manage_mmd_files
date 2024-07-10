@@ -56,6 +56,6 @@ def find_xml_files(directory, product_type):
     xml_files = []
     for root, dirs, files in os.walk(directory):
         for file in files:
-            if file.endswith(".xml"):
+            if file.endswith(".xml") and file.startswith("S"):
                 xml_files.append(os.path.join(root, file))
     return xml_files
