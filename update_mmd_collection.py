@@ -8,20 +8,18 @@ def process_files(directory, product_type):
     """
     xml_files = find_xml_files(directory, product_type)
 
-    with open(log_file_path, 'a') as log_file:
-        for xml_file in xml_files:
-            print(xml_file)
-            mmd = MMD(xml_file)
-            mmd.read()
-            mmd.get_geospatial_extents()
-            within_sios = mmd.check_if_within_sios()
-            #TODO: separate element for each collection
-            mmd.remove_element('.//mmd.collection')
-            if within_sios:
-                mmd.update_element('.//mmd:collection', 'NBS')
-            else:
-                mmd.update_element('.//mmd:collection', 'NBS')
-            mmd.write()
+    for xml_file in xml_files:
+        print(xml_file)
+        mmd = MMD(xml_file)
+        mmd.read()
+        mmd.get_geospatial_extents()
+        within_sios = mmd.check_if_within_sios()
+        #TODO: separate element for each collection
+        mmd.remove_element('.//mmd:collection')
+        mmd.add_collection('NBS')
+        if within_sios:
+            mmd.add_collection('SIOS')
+        mmd.write()
 
 def main():
     """

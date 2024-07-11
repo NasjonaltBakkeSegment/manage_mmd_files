@@ -2,7 +2,7 @@ import os
 from lxml import etree
 from shapely.geometry import Polygon, box
 
-sios = Polyon([
+sios = Polygon([
     (-20, 70),
     (-20, 90),
     (40, 90),
@@ -29,6 +29,7 @@ class MMD:
     def read(self):
         self.tree = etree.parse(self.filepath)
         self.root = self.tree.getroot()
+        self.ns = self.root.nsmap
 
     def write(self):
         self.tree.write(
@@ -39,7 +40,7 @@ class MMD:
     def update_element(self, element_name, element_value, language=None):
         xml_element = self.root.find(
             element_name,
-            namespaces=self.root.nsmap
+            namespaces=self.ns
         )
         if xml_element is not None:
             xml_element.text = element_value
@@ -50,16 +51,16 @@ class MMD:
         # Find all instances of element
         xml_element_list = self.root.findall(
             element,
-            namespaces=self.root.nsmap
+            namespaces=self.ns
         )
-        for xml_element in xml_element_list:
+        for xml_element in xml_element_list[:]:
             if xml_element is not None:
                 xml_element.getparent().remove(xml_element)
 
     def check_element_exists(self, element_name):
         xml_element = self.root.find(
             element_name,
-            namespaces=self.root.nsmap
+            namespaces=self.ns
         )
         if xml_element is not None:
             return True
@@ -88,6 +89,20 @@ class MMD:
 
         # Check if the extent box overlaps with the given polygon
         return extent_box.intersects(sios) # Returns True or False
+
+    def add_collection(self, collection):
+
+        # Find the index of dataset_production_status
+        dps_element = self.root.xpath(".//mmd:dataset_production_status", namespaces=self.ns)[0]
+        dps_index = list(self.root).index(
+            dps_element
+            )
+
+        # Add new collection elements after dataset_production_status
+        new_element = etree.Element("{http://www.met.no/schema/mmd}collection")
+        new_element.text = collection
+        self.root.insert(dps_index + 1, new_element)
+        new_element.tail = "\n  "  # Proper indentation
 
 def find_xml_files(directory, product_type):
     """
