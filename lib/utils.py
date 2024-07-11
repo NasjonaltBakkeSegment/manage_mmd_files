@@ -2,6 +2,14 @@ import os
 from lxml import etree
 from shapely.geometry import Polygon, box
 
+sios = Polyon([
+    (-20, 70),
+    (-20, 90),
+    (40, 90),
+    (40, 70),
+    (-20, 70)
+    ])
+
 polygon = Polygon([
     (-20.263238824222373, 84.8852877777822),
     (-36.25445787748578, 67.02581594412311),
@@ -58,20 +66,28 @@ class MMD:
         else:
             return False
 
+    def get_geospatial_extents(self):
+        # Extract the geographic extent coordinates
+        self.north = float(self.root.xpath('.//mmd:north', namespaces=self.ns)[0].text)
+        self.south = float(self.root.xpath('.//mmd:south', namespaces=self.ns)[0].text)
+        self.west = float(self.root.xpath('.//mmd:west', namespaces=self.ns)[0].text)
+        self.east = float(self.root.xpath('.//mmd:east', namespaces=self.ns)[0].text)
+
     def check_if_within_polygon(self):
 
-        # Extract the geographic extent coordinates
-        north = float(self.root.xpath('.//mmd:north', namespaces=self.root.nsmap)[0].text)
-        south = float(self.root.xpath('.//mmd:south', namespaces=self.root.nsmap)[0].text)
-        west = float(self.root.xpath('.//mmd:west', namespaces=self.root.nsmap)[0].text)
-        east = float(self.root.xpath('.//mmd:east', namespaces=self.root.nsmap)[0].text)
-
         # Create a shapely box (rectangle) from the geographic extent
-        extent_box = box(west, south, east, north)
+        extent_box = box(self.west, self.south, self.east, self.north)
 
         # Check if the extent box overlaps with the given polygon
         return extent_box.intersects(polygon) # Returns True or False
 
+    def check_if_within_sios(self):
+
+        # Create a shapely box (rectangle) from the geographic extent
+        extent_box = box(self.west, self.south, self.east, self.north)
+
+        # Check if the extent box overlaps with the given polygon
+        return extent_box.intersects(sios) # Returns True or False
 
 def find_xml_files(directory, product_type):
     """
