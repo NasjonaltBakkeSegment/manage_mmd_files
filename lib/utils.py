@@ -104,6 +104,38 @@ class MMD:
         self.root.insert(dps_index + 1, new_element)
         new_element.tail = "\n  "  # Proper indentation
 
+    def update_odata_access_url(self):
+        '''
+        The ODATA access url should point to colhub-archive.met.no
+        However, for some products it is pointing to colhub.met.no
+        The products don't exist there, so we need to switch the URLs
+        But only if the product is in the AOI. Otherwise the product
+        should be set to inactive.
+        '''
+
+        self.get_geospatial_extents()
+        within_aoi = self.check_if_within_polygon()
+        if within_aoi:
+            # Find the data_access element with type ODATA
+            data_access = self.root.find('.//mmd:data_access[mmd:type="ODATA"]', self.ns)
+
+            if data_access is not None:
+                resource = data_access.find('mmd:resource', self.ns)
+
+                if resource is not None:
+                    original_url = resource.text
+                    updated_url = original_url.replace('colhub.met.no', 'colhub-archive.met.no')
+
+                    if original_url != updated_url:
+                        resource.text = updated_url
+                        print(f"Updated resource URL: {updated_url}")
+                    else:
+                        print("No update needed for the resource URL.")
+                else:
+                    print("No resource element found in data_access.")
+        else:
+            self.update_element('.//mmd:metadata_status', 'Inactive')
+
 def find_xml_files(directory, product_type):
     """
     Find all XML files in the metadata directories for the given product type.

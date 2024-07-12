@@ -4,7 +4,7 @@ import argparse
 
 def process_files(directory, product_type):
     """
-    Process XML files and update the collection to be NBS.
+    Process XML files
     """
     xml_files = find_xml_files(directory, product_type)
 
@@ -12,19 +12,14 @@ def process_files(directory, product_type):
         print(xml_file)
         mmd = MMD(xml_file)
         mmd.read()
-        mmd.get_geospatial_extents()
-        within_sios = mmd.check_if_within_sios()
-        mmd.remove_element('.//mmd:collection')
-        mmd.add_collection('NBS')
-        if within_sios:
-            mmd.add_collection('SIOS')
+        mmd.update_odata_access_url()
         mmd.write()
 
 def main():
     """
     Main function to parse arguments and initiate the process.
     """
-    parser = argparse.ArgumentParser(description='Process XML files to update the collection to be equal to NBS in all files.')
+    parser = argparse.ArgumentParser(description='Process XML files to update the odata access url to be at colhub-archive instead of colhub.')
     parser.add_argument('directory', type=str, help='Top level directory to search')
     parser.add_argument('product_type', type=str, help='Product type to search for (e.g., S2A, S1A)')
 
