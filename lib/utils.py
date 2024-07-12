@@ -136,6 +136,23 @@ class MMD:
         else:
             self.update_element('.//mmd:metadata_status', 'Inactive')
 
+    def update_xml_version(self, transform):
+        result = transform(self.tree)
+        self.tree = result
+
+    def set_to_active(self):
+        '''
+        Set to inactive based on certain criteria.
+        All S2 L1C and only up to and including 2020.
+        '''
+        self.get_geospatial_extents()
+        within_aoi = self.check_if_within_polygon()
+        if within_aoi:
+            self.update_element('.//mmd:metadata_status', 'Active')
+        else:
+            self.update_element('.//mmd:metadata_status', 'Inactive')
+
+
 def find_xml_files(directory, product_type):
     """
     Find all XML files in the metadata directories for the given product type.
