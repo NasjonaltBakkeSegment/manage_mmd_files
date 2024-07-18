@@ -136,9 +136,44 @@ class MMD:
         else:
             self.update_element('.//mmd:metadata_status', 'Inactive')
 
-    def update_xml_version(self, transform):
-        result = transform(self.tree)
-        self.tree = result
+    # def update_xml_version(self, transform):
+    #     result = transform(self.tree)
+    #     self.tree = result
+    # The XSLT file is deleting everything from the platform and instrumentation elements.
+
+    def update_last_metadata_update(self):
+
+        # Find the last_metadata_update element
+        last_metadata_update = self.root.find('.//mmd:last_metadata_update', self.ns)
+
+        if last_metadata_update is not None:
+            # Check if it contains a direct datetime text
+            datetime_text = last_metadata_update.text.strip() if last_metadata_update.text else None
+            if datetime_text and last_metadata_update.find('.//mmd:update', self.ns) is None:
+                # Create the new structure
+                update_elem = etree.Element('{http://www.met.no/schema/mmd}update')
+
+                datetime_elem = etree.SubElement(update_elem, '{http://www.met.no/schema/mmd}datetime')
+                datetime_elem.text = datetime_text
+
+                type_elem = etree.SubElement(update_elem, '{http://www.met.no/schema/mmd}type')
+                type_elem.text = 'Created'
+
+                note_elem = etree.SubElement(update_elem, '{http://www.met.no/schema/mmd}note')
+
+                # Clear the original element and append the new structure
+                last_metadata_update.clear()
+                last_metadata_update.append(update_elem)
+
+                # Ensure proper indentation
+                update_elem.text = '\n      '
+                datetime_elem.tail = '\n      '
+                type_elem.tail = '\n      '
+                note_elem.tail = '\n    '
+                last_metadata_update.text = '\n    '
+                last_metadata_update[-1].tail = '\n  '
+                last_metadata_update.tail = '\n  '
+
 
     def set_to_active(self):
         '''
