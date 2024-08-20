@@ -1,6 +1,7 @@
 import os
 from lxml import etree
 from shapely.geometry import Polygon, box
+from datetime import datetime, timezone
 
 sios = Polygon([
     (-20, 70),
@@ -19,6 +20,9 @@ polygon = Polygon([
     (-20.263238824222373, 84.8852877777822),
     (-20.263238824222373, 84.8852877777822)
     ])
+
+def get_current_time():
+    return datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
 
 class MMD:
 
@@ -180,6 +184,7 @@ class MMD:
         Set product to inactive
         '''
         self.update_element('.//mmd:metadata_status', 'Inactive')
+        self.log_change('Major modification', 'Product has been deleted')
 
     def set_to_active(self):
         '''
@@ -192,6 +197,41 @@ class MMD:
             self.update_element('.//mmd:metadata_status', 'Active')
         else:
             self.update_element('.//mmd:metadata_status', 'Inactive')
+
+    def log_change(self, updatetype, note):
+        '''
+        Add a new entry to the last_metadata_update element
+        To log changes made to the file
+        '''
+
+        # Find the last_metadata_update element
+        last_metadata_update = self.root.find("mmd:last_metadata_update", namespaces=self.ns)
+
+        update = {
+            'datetime': get_current_time(),
+            'type': updatetype,
+            'note': note
+        }
+
+        update_element = etree.Element("{http://www.met.no/schema/mmd}update")
+
+        datetime_element = etree.SubElement(update_element, "{http://www.met.no/schema/mmd}datetime")
+        datetime_element.text = update["datetime"]
+
+        type_element = etree.SubElement(update_element, "{http://www.met.no/schema/mmd}type")
+        type_element.text = update["type"]
+
+        note_element = etree.SubElement(update_element, "{http://www.met.no/schema/mmd}note")
+        note_element.text = update["note"]
+
+        update_element.text = '\n      '
+        update_element.tail = '\n  '
+        datetime_element.tail = '\n      '
+        type_element.tail = '\n      '
+        note_element.tail = '\n    '
+
+        last_metadata_update.append(update_element)
+        last_metadata_update[-2].tail = '\n    '
 
 
 def find_xml_files(directory, product_type):
