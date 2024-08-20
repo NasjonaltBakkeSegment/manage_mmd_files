@@ -175,6 +175,12 @@ class MMD:
                 last_metadata_update.tail = '\n  '
 
 
+    def set_to_inactive(self):
+        '''
+        Set product to inactive
+        '''
+        self.update_element('.//mmd:metadata_status', 'Inactive')
+
     def set_to_active(self):
         '''
         Set to inactive based on certain criteria.
